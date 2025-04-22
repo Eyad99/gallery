@@ -17,7 +17,7 @@ const SingleCategory = () => {
 
 	const { data, isLoading, isError, error } = useFetchDataRQ({
 		queryKey: ['category', Number(params?.id)],
-		queryFn: () => categoryApi.singleCategory(Number(Number(params?.id))),
+		queryFn: () => categoryApi.singleCategory(Number(params?.id)),
 		enableCondition: Number(params?.id) > 1000 ? false : !!Number(params?.id),
 	});
 

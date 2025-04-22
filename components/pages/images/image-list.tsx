@@ -24,6 +24,7 @@ import ImageDialog from './image-dialog';
 import DeleteConfirmationDialog from './delete-confirmation-dialog';
 import CardMenu from '@/components/reusable/card-menu';
 import AddEntityCard from '@/components/reusable/add-entity-card';
+import Link from 'next/link';
 
 export interface Handlers {
 	handleNewDialogOpen: () => void;
@@ -122,69 +123,71 @@ const ImageList: FC<ImageListProps> = ({ images, categories, handlers, dialogSta
 				) : (
 					filteredImages.map((image) => (
 						<Grid size={{ md: 3, sm: 6, xs: 12 }} key={image.id}>
-							<Card
-								elevation={2}
-								sx={{
-									height: '100%',
-									display: 'flex',
-									flexDirection: 'column',
-									transition: 'transform 0.2s, box-shadow 0.2s',
-									position: 'relative',
-									'&:hover': {
-										transform: 'translateY(-4px)',
-										boxShadow: (theme) => theme.shadows[8],
-									},
-								}}
-							>
-								{/* CardMenu */}
-								<CardMenu
-									entity={image}
-									handlers={{
-										handleSelectEntity: () => handlers.handleSelectImage(image),
-										handleEditClick: () => handlers.handleEditClick(image),
-										handleDeleteClick: () => handlers.handleDeleteClick(image),
+							<Link href={`image/${image.id}`}>
+								<Card
+									elevation={2}
+									sx={{
+										height: '100%',
+										display: 'flex',
+										flexDirection: 'column',
+										transition: 'transform 0.2s, box-shadow 0.2s',
+										position: 'relative',
+										'&:hover': {
+											transform: 'translateY(-4px)',
+											boxShadow: (theme) => theme.shadows[8],
+										},
 									}}
-								/>
-
-								{image.url ? (
-									<CardMedia component='img' height='140' image={image.url} alt={image.name} sx={{ objectFit: 'cover' }} />
-								) : (
-									<Box
-										sx={{
-											height: 140,
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											bgcolor: 'action.hover',
+								>
+									{/* CardMenu */}
+									<CardMenu
+										entity={image}
+										handlers={{
+											handleSelectEntity: () => handlers.handleSelectImage(image),
+											handleEditClick: () => handlers.handleEditClick(image),
+											handleDeleteClick: () => handlers.handleDeleteClick(image),
 										}}
-									>
-										<Typography variant='body2' color='text.secondary'>
-											No Image
+									/>
+
+									{image.url ? (
+										<CardMedia component='img' height='140' image={image.url} alt={image.name} sx={{ objectFit: 'cover' }} />
+									) : (
+										<Box
+											sx={{
+												height: 140,
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												bgcolor: 'action.hover',
+											}}
+										>
+											<Typography variant='body2' color='text.secondary'>
+												No Image
+											</Typography>
+										</Box>
+									)}
+									<CardContent sx={{ flexGrow: 1 }}>
+										<Typography gutterBottom variant='h6' component='h2'>
+											{image.name}
 										</Typography>
-									</Box>
-								)}
-								<CardContent sx={{ flexGrow: 1 }}>
-									<Typography gutterBottom variant='h6' component='h2'>
-										{image.name}
-									</Typography>
-									<Typography variant='body2' color='text.secondary'>
-										Category: {getCategoryName(image.categoryId)}
-									</Typography>
-									{/* <Typography variant='body2' color='text.secondary'>
+										<Typography variant='body2' color='text.secondary'>
+											Category: {getCategoryName(image.categoryId)}
+										</Typography>
+										{/* <Typography variant='body2' color='text.secondary'>
 										Uploaded: {new Date(image.uploadDate).toLocaleDateString()}
 									</Typography> */}
-									{image.metadata && (
-										<>
-											<Typography variant='body2' color='text.secondary'>
-												Size: {image.metadata.size || 'Unknown'}
-											</Typography>
-											<Typography variant='body2' color='text.secondary'>
-												Resolution: {image.metadata.resolution || 'Unknown'}
-											</Typography>
-										</>
-									)}
-								</CardContent>
-							</Card>
+										{image.metadata && (
+											<>
+												<Typography variant='body2' color='text.secondary'>
+													Size: {image.metadata.size || 'Unknown'}
+												</Typography>
+												<Typography variant='body2' color='text.secondary'>
+													Resolution: {image.metadata.resolution || 'Unknown'}
+												</Typography>
+											</>
+										)}
+									</CardContent>
+								</Card>
+							</Link>
 						</Grid>
 					))
 				)}
