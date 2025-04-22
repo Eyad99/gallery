@@ -25,15 +25,6 @@ const Categories = () => {
 	// Mutations
 	const createMutation = useMutateData({
 		mutationFn: categoryApi.createCategory,
-		onSuccessFn: ({ data: transmittedData, variables }) => {
-			queryClient.setQueryData(['categories'], (old: any) => {
-				const currentCategories = old?.data || [];
-				return {
-					...old,
-					data: [...currentCategories, transmittedData],
-				};
-			});
-		},
 	});
 
 	const updateMutation = useMutateData({
@@ -65,6 +56,13 @@ const Categories = () => {
 	// Handlers [Create]
 	const handleSaveNew = (newCategory: Category_Req) => {
 		createMutation.mutate(newCategory);
+		queryClient.setQueryData(['categories'], (old: { data: Category_Res[] } | undefined) => {
+			const currentICategories = old?.data || [];
+			return {
+				...old,
+				data: [...currentICategories, newCategory],
+			};
+		});
 	};
 
 	// Handlers [Edit]

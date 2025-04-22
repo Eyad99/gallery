@@ -1,29 +1,25 @@
-import React, { FC, useState, useMemo } from 'react';
+import React, { FC, useMemo } from 'react';
 import {
 	Box,
-	Grid,
+	Typography,
 	Card,
 	CardContent,
-	Typography,
 	CardMedia,
-	IconButton,
-	Menu,
-	MenuItem as MuiMenuItem,
-	ListItemIcon,
-	ListItemText,
 	TextField,
 	Select,
 	MenuItem as SelectMenuItem,
 	FormControl,
 	InputLabel,
 	Button,
+	useMediaQuery,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { FixedSizeGrid } from 'react-window';
 import { Image_Res, Category_Res, Image_Req } from '@/core/models';
-import ImageDialog from './image-dialog';
 import DeleteConfirmationDialog from './delete-confirmation-dialog';
-import CardMenu from '@/components/reusable/card-menu';
 import AddEntityCard from '@/components/reusable/add-entity-card';
+import ImageDialog from './image-dialog';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import CardMenu from '@/components/reusable/card-menu';
 import Link from 'next/link';
 
 export interface Handlers {
@@ -86,6 +82,98 @@ const ImageList: FC<ImageListProps> = ({ images, categories, handlers, dialogSta
 		return category ? category.name : 'Unknown';
 	};
 
+	// Responsive column count based on breakpoints
+	const isXs = useMediaQuery('(max-width:600px)'); // Mobile
+	const isSm = useMediaQuery('(max-width:960px)'); // Tablet
+	const columnCount = isXs ? 1 : isSm ? 2 : 4; // 1 for mobile, 2 for tablet, :-
+
+	// Responsive row height based on screen size
+	const rowHeight = isXs ? 350 : isSm ? 320 : 300;
+
+	const GridItem = ({
+		columnIndex,
+		rowIndex,
+		style,
+		data,
+	}: {
+		columnIndex: number;
+		rowIndex: number;
+		style: React.CSSProperties;
+		data: { filteredImages: Image_Res[]; handlers: Handlers; getCategoryName: (id: number | string) => string; columnCount: number };
+	}) => {
+		const { filteredImages, handlers, getCategoryName, columnCount } = data;
+		const index = rowIndex * columnCount + columnIndex;
+
+		if (index >= filteredImages.length) return null;
+
+		const image = filteredImages[index];
+
+		return (
+			<div style={{ ...style, padding: 8 }}>
+				<Link href={`image/${image.id}`}>
+					<Card
+						elevation={2}
+						sx={{
+							height: '100%',
+							display: 'flex',
+							flexDirection: 'column',
+							transition: 'transform 0.2s, box-shadow 0.2s',
+							position: 'relative',
+							'&:hover': {
+								transform: 'translateY(-4px)',
+								boxShadow: (theme) => theme.shadows[8],
+							},
+						}}
+					>
+						<CardMenu
+							entity={image}
+							handlers={{
+								handleSelectEntity: () => handlers.handleSelectImage(image),
+								handleEditClick: () => handlers.handleEditClick(image),
+								handleDeleteClick: () => handlers.handleDeleteClick(image),
+							}}
+						/>
+						{image.url ? (
+							<CardMedia component='img' height='140' image={image.url} alt={image.name} sx={{ objectFit: 'cover' }} />
+						) : (
+							<Box
+								sx={{
+									height: 140,
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									bgcolor: 'action.hover',
+								}}
+							>
+								<Typography variant='body2' color='text.secondary'>
+									No Image
+								</Typography>
+							</Box>
+						)}
+						<CardContent sx={{ flexGrow: 1 }}>
+							<Typography gutterBottom variant='h6' component='h2'>
+								{image.name}
+							</Typography>
+							<Typography variant='body2' color='text.secondary'>
+								Category: {getCategoryName(image.categoryId)}
+							</Typography>
+							{image.metadata && (
+								<>
+									<Typography variant='body2' color='text.secondary'>
+										Size: {image.metadata.size || 'Unknown'}
+									</Typography>
+									<Typography variant='body2' color='text.secondary'>
+										Resolution: {image.metadata.resolution || 'Unknown'}
+									</Typography>
+								</>
+							)}
+						</CardContent>
+					</Card>
+				</Link>
+			</div>
+		);
+	};
+
 	return (
 		<div>
 			<Typography variant='h4' component='h1' gutterBottom sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
@@ -112,89 +200,51 @@ const ImageList: FC<ImageListProps> = ({ images, categories, handlers, dialogSta
 				</Button>
 			</Box>
 
-			{/* Image Gallery */}
-			<Grid container spacing={3}>
+			{/* Virtualized Image Gallery */}
+			<Box
+				sx={{
+					height: {
+						xs: filteredImages.length === 0 ? '' : '80vh',
+						sm: filteredImages.length === 0 ? '' : '70vh',
+						md: filteredImages.length === 0 ? '' : '600px',
+					},
+					width: '100%',
+				}}
+			>
 				{filteredImages.length === 0 ? (
-					<Grid size={{ xs: 12 }}>
-						<Typography variant='body1' color='text.secondary' textAlign='center'>
-							No images match the current filters.
-						</Typography>
-					</Grid>
+					<Typography variant='body1' color='text.secondary' textAlign='center'>
+						No images match the current filters.
+					</Typography>
 				) : (
-					filteredImages.map((image) => (
-						<Grid size={{ md: 3, sm: 6, xs: 12 }} key={image.id}>
-							<Link href={`image/${image.id}`}>
-								<Card
-									elevation={2}
-									sx={{
-										height: '100%',
-										display: 'flex',
-										flexDirection: 'column',
-										transition: 'transform 0.2s, box-shadow 0.2s',
-										position: 'relative',
-										'&:hover': {
-											transform: 'translateY(-4px)',
-											boxShadow: (theme) => theme.shadows[8],
-										},
-									}}
-								>
-									{/* CardMenu */}
-									<CardMenu
-										entity={image}
-										handlers={{
-											handleSelectEntity: () => handlers.handleSelectImage(image),
-											handleEditClick: () => handlers.handleEditClick(image),
-											handleDeleteClick: () => handlers.handleDeleteClick(image),
-										}}
-									/>
-
-									{image.url ? (
-										<CardMedia component='img' height='140' image={image.url} alt={image.name} sx={{ objectFit: 'cover' }} />
-									) : (
-										<Box
-											sx={{
-												height: 140,
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'center',
-												bgcolor: 'action.hover',
-											}}
-										>
-											<Typography variant='body2' color='text.secondary'>
-												No Image
-											</Typography>
-										</Box>
-									)}
-									<CardContent sx={{ flexGrow: 1 }}>
-										<Typography gutterBottom variant='h6' component='h2'>
-											{image.name}
-										</Typography>
-										<Typography variant='body2' color='text.secondary'>
-											Category: {getCategoryName(image.categoryId)}
-										</Typography>
-										{/* <Typography variant='body2' color='text.secondary'>
-										Uploaded: {new Date(image.uploadDate).toLocaleDateString()}
-									</Typography> */}
-										{image.metadata && (
-											<>
-												<Typography variant='body2' color='text.secondary'>
-													Size: {image.metadata.size || 'Unknown'}
-												</Typography>
-												<Typography variant='body2' color='text.secondary'>
-													Resolution: {image.metadata.resolution || 'Unknown'}
-												</Typography>
-											</>
-										)}
-									</CardContent>
-								</Card>
-							</Link>
-						</Grid>
-					))
+					<AutoSizer>
+						{({ height, width }) => (
+							<FixedSizeGrid
+								columnCount={columnCount}
+								columnWidth={width / columnCount - 8} // Adjust for padding
+								rowCount={Math.ceil(filteredImages.length / columnCount)}
+								rowHeight={rowHeight}
+								height={height}
+								width={width}
+								itemData={{
+									filteredImages,
+									handlers,
+									getCategoryName,
+									columnCount,
+								}}
+							>
+								{GridItem}
+							</FixedSizeGrid>
+						)}
+					</AutoSizer>
 				)}
+			</Box>
 
-				{/* AddEntityCard */}
+			{/* AddEntityCard */}
+			<Box sx={{ mt: 3 }}>
 				<AddEntityCard onClick={handlers.handleNewDialogOpen} title='Add New Image' size={{ md: 3, sm: 6, xs: 12 }} />
-			</Grid>
+			</Box>
+
+			{/* Dialogs */}
 			<ImageDialog
 				open={dialogStates.openNewDialog}
 				title='Upload New Image'

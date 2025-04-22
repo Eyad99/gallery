@@ -15,9 +15,9 @@ import {
 	Select,
 	MenuItem,
 } from '@mui/material';
-import { useFetchDataRQ } from '@/hooks/useFetchDataRQ';
-import { imageApi, categoryApi, annotationApi } from '@/core/services';
 import { Image_Res, Annotation_Res, Annotation_Req } from '@/core/models';
+import { imageApi, categoryApi, annotationApi } from '@/core/services';
+import { useFetchDataRQ } from '@/hooks/useFetchDataRQ';
 import { useMutateData } from '@/hooks/useMutateData';
 import DeleteConfirmationDialog from '@/components/pages/annotations/delete-confirmation-dialog';
 import ErrorMessage from '@/components/reusable/error-message';
@@ -56,15 +56,6 @@ const SingleImage = () => {
 	// Mutations
 	const createAnnotationMutation = useMutateData({
 		mutationFn: annotationApi.createAnnotation,
-		// onSuccessFn: ({ data: transmittedData }) => {
-		// 	queryClient.setQueryData(['annotations', id], (old: { data: Annotation_Res[] } | undefined) => {
-		// 		const currentAnnotations = old?.data || [];
-		// 		return {
-		// 			...old,
-		// 			data: [...currentAnnotations, transmittedData],
-		// 		};
-		// 	});
-		// },
 	});
 
 	const deleteAnnotationMutation = useMutateData({

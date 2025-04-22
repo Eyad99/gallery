@@ -6,9 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFetchDataRQ } from '@/hooks/useFetchDataRQ';
 import { useMutateData } from '@/hooks/useMutateData';
 import { Container } from '@mui/material';
+import { useForm } from 'react-hook-form';
 import CardSkeleton from '@/components/skeletons/card-skeleton';
 import ImageList from './image-list';
-import { useForm } from 'react-hook-form';
 
 interface FilterForm {
 	name: string;
@@ -55,15 +55,6 @@ const Images = () => {
 	// Mutations
 	const createMutation = useMutateData({
 		mutationFn: imageApi.createImage,
-		onSuccessFn: ({ data: transmittedData }) => {
-			queryClient.setQueryData(['images'], (old: any) => {
-				const currentImages = old?.data || [];
-				return {
-					...old,
-					data: [...currentImages, { ...transmittedData, uploadDate: new Date().toISOString() }],
-				};
-			});
-		},
 	});
 
 	const updateMutation = useMutateData({
@@ -95,6 +86,14 @@ const Images = () => {
 	// Handlers [Create]
 	const handleSaveNew = (image: Image_Req) => {
 		createMutation.mutate(image);
+
+		queryClient.setQueryData(['images'], (old: { data: Image_Res[] } | undefined) => {
+			const currentImages = old?.data || [];
+			return {
+				...old,
+				data: [...currentImages, { ...image, uploadDate: new Date().toISOString() }],
+			};
+		});
 	};
 
 	// Handlers [Edit]
