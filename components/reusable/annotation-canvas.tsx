@@ -101,7 +101,6 @@ const AnnotationCanvas: FC<AnnotationCanvasProps> = ({
 	// Calculate stage dimensions based on image
 	const stageWidth = image ? Math.min(image.width, 600) : 600;
 	const stageHeight = image ? Math.min(image.height, 400) : 400;
-	console.log('annotations', annotations);
 	return (
 		<Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, overflow: 'hidden' }}>
 			<Stage

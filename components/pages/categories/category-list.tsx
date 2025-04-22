@@ -56,7 +56,7 @@ const CategoryList: FC<CategoryListProps> = ({ categories, handlers, dialogState
 			</Typography>
 			<Grid container spacing={3}>
 				{categories?.map((category: Category_Res) => (
-					<Grid size={{ md: 3, xs: 12 }} key={category.id || category.name}>
+					<Grid size={{ lg: 3, md: 6, xs: 12 }} key={category.id || category.name}>
 						<Link href={`category/${category.id}`}>
 							<Card
 								elevation={2}
@@ -114,7 +114,7 @@ const CategoryList: FC<CategoryListProps> = ({ categories, handlers, dialogState
 				))}
 
 				{/* AddEntityCard */}
-				<AddEntityCard onClick={handlers.handleNewDialogOpen} title='Add New Category' size={{ md: 3, xs: 12 }} />
+				<AddEntityCard onClick={handlers.handleNewDialogOpen} title='Add New Category' size={{ lg: 3, md: 6, xs: 12 }} />
 			</Grid>
 
 			<DeleteConfirmationDialog
